@@ -1,45 +1,60 @@
-# TITLE??????
+ TITLE (TBD)
+
+## 3D Stochastic VAE with Demographic Conditioning and Severity-Aware Representation Learning for Alzheimer’s Progression Modeling from Structural MRI ?????????
+
+---
 
 ## Project Overview
 
-This project develops a 3D variational autoencoder (VAE)-based framework for neuroimaging analysis of dementia progression using structural MRI scans (T1-weighted and T2-weighted) and the Clinical Dementia Rating – Sum of Boxes (CDR-SB) scores.
+This project develops a 3D variational autoencoder (VAE) based multi-task deep learning framework for modeling neuroanatomical structure and dementia severity using structural MRI scans (T1-weighted and T2-weighted) trained on the OASIS-3 dataset sourced from Washinton University in St. Louis.
 
-The model learns a low-dimensional latent representation of brain MRI volumes while incorporating demographic conditioning (age, sex) and stochastic regularization mechanisms. These learned representations are then used for severity-aware anomaly detection and disease progression analysis.
+Unlike standard VAEs which focus solely on reconstruction, this framework jointly learns:
 
-Unlike standard supervised classification pipelines, this approach leverages representation learning and probabilistic modeling to capture the subtle structural changes associated with early and progressive cognitive decline.
+- A probabilistic latent representation of brain anatomy  ????
+- A severity-aware regression signal for the Clinical Dementia Rating–Sum of Boxes (CDR-SB) scores  
+- A stochastic feature propagation mechanism via Bayesian skip connections  
+- A demographic conditioned generative process on age and sex
+
+The model is designed to capture both anatomical variation and disease progression in a shared latent space, while incorporating clinical supervision through the CDR-SB regression.
+
 ---
 
-## Objectives
+## Key Contributions
 
-### 1. Learn a structured latent space of brain anatomy
-Train a 3D VAE to encode MRI volumes into a compact latent representation that preserves clinically meaningful variation.
+### 1. Multi-objective representation learning
+The model jointly optimizes:
+- MRI reconstruction fidelity  
+- KL divergence regularization 
+- CDR-SB regression  
+- Patch-level representation consistency  
 
-### 2. Incorporate demographic conditioning
-Integrate age and sex information into the generative process to reduce confounding effects and improve subject-specific modeling.
-
-### 3. Model uncertainty in feature propagation
-Use stochastic (Bayesian) skip connections to capture variability in anatomical reconstruction and improve model robustness.
-
-### 4. Capture disease-related structure without direct supervision
-Learn representations that naturally separate healthy and diseased populations using reconstruction and distributional constraints rather than explicit classification labels.
-
-### 5. Quantify disease severity in latent space
-Evaluate whether learned representations correlate with clinical severity (CDR-SB) using:
-- kNN-based anomaly scoring
-- Group-wise severity stratification
-- Monotonic progression analysis
-
-### 6. Validate clinical relevance of latent embeddings
-Assess whether anomaly scores reflect disease progression using:
-- ROC-AUC (binary and ordinal formulations)
-- Cohen’s d effect size
-- One-vs-rest separability
 ---
+
+### 2. Bayesian skip connection framework
+Utilizes stochastic skip connections to model uncertainty in intermediate anatomical features by learning a Gaussian distribution over skip features conditioned on both encoder activations and demographic embedding (age and sex). By conditioning on age and sex we are able to
+
+---
+
+### 3. Demographic-conditioned generative modeling
+Age and sex are embedded via a learned MLP and injected into decoder skip pathways. This conditioning reduces confounding effects and improves subject-specific reconstruction.
+
+---
+
+### 4. Severity-aware latent space structuring
+A dedicated CDR prediction head enforces the latent representations of each mri to encode clinically meaningful disease severity signals.
+
+---
+
+### 5. Patch-level anatomical consistency regularization
+A patch-wise contrastive loss enforces similarity across spatial bottleneck representations to stabilize learned anatomical embeddings.
+
+---
+
 
 ## Dataset
 
 **Source:** OASIS-3 dataset
-> OASIS-3 is a retrospective dataset of 1378 participants collected over 30 years, including cognitively normal individuals and patients at various stages of cognitive decline.
+OASIS-3 is a retrospective dataset of 1378 participants collected over 30 years, including cognitively normal individuals and patients at various stages of cognitive decline.
 
 **MRI Modalities Used:**
 
@@ -50,7 +65,18 @@ Assess whether anomaly scores reflect disease progression using:
 
 * Clinical Dementia Rating—Sum of Boxes (CDR-SB) Scores
 * Demographics (age, sex)
-  
+
+**Severity Groups** 
+For both the T1w and T2w MRI modalities, the CDR-SB scores are heavily skewed towards 0 (cognitivly normal) and 0.5 (questionable imparement). Additionally the data experiences sparsity throughout CDR-SB scores greater than 0.5 and some higher scores are not represented in the data. Because of this, while the model is trained using the original CDR-SB scores, it is evaluated using scoring structure defined in Wyman-Chick et al.
+
+The severity groups are as follows:
+
+* Questionable: 0.5 to 4
+* Mild: 4.5 to 9 
+* Moderate: 9.5 to 15.5 
+* Severe: 16 to 18 
+
+
 ### Age and Clinical Label Alignment
 
 Participant age at each MRI session was calculated by adding the participant's age at study entry and the number of days elapsed from study entry to the MRI session. Because CDR assessments were performed throughout the study, the CDR-SB score used for each MRI was selected as the closest available assessment to the MRI session date. This ensures that the clinical label is as temporally aligned as possible with the imaging data, even if the MRI and CDR assessment did not occur on the same day.
@@ -110,8 +136,7 @@ We applied **N4 bias field correction** using SimpleITK to correct low-frequency
 All volumes were resampled to a fixed voxel spacing: `(160, 192, 160)`. If the volume was larger, it was center-cropped; if it was smaller, it was zero-padded. This ensures consistent tensor dimensions and compatibility with 3d CNNs training. 
 
 ---
-
-### 7. Final Formatting
+### 5. Final Formatting
 
 Each processed MRI is stored as:
 
@@ -128,79 +153,452 @@ The channel dimension is added to support PyTorch 3D convolutional models.
 - Failed preprocessing steps (e.g., skull stripping errors) were logged and excluded  
 - Visual inspection was performed on sample scans to verify anatomical integrity  
 - Central slices (sagittal, coronal, axial) were used for manual sanity checks
-  
+  ADD EDGE STUFF
 ---
 
-## 📊 Dataset Overview
+ADD HOW I GO THROGH TO GET RUD OF BAD ONES
+___
 
-The dataset consists of structural MRI scans from the OASIS-3 cohort, preprocessed into `.npy` volumes. Data is split into T1-weighted (T1w) and T2-weighted (T2w) modalities, with subject-level grouping to prevent leakage.
+## Dataset Summary Statistics
 
----
-
-## Dataset Statistics
-
-### T1-weighted (T1w)
-- Number of subjects: [TODO]
-- Number of scans: [TODO]
-- CDR-SB distribution: [TODO]
-- Age distribution: [TODO]
-- Sex distribution: [TODO]
-
-### T2-weighted (T2w)
-- Number of subjects: [TODO]
-- Number of scans: [TODO]
-- CDR-SB distribution: [TODO]
-- Age distribution: [TODO]
-- Sex distribution: [TODO]
+This section summarizes the cleaned OASIS-3 T1w and T2w datasets used in this work.
 
 ---
 
-## Dataset Splits
+# 1. T1-weighted MRI Dataset (T1w)
 
-### Training Dataset (Healthy Cohort)
-Healthy control subjects used for unsupervised representation learning.
+## Overview
 
-- T1w healthy training set: 501
-- T2w healthy training set: 478
-- One scan per subject selected to avoid subject-level bias
-- Used for VAE training (reconstruction + KL + contrastive objectives)
-
----
-
-### Max-CDR Test Dataset (Disease Severity Evaluation)
-One MRI per subject was selected based on the maximum recorded CDR-SB score.
-
-- T1w max-CDR test set: 459
-- T2w max-CDR test set: 450
-- Used for:
-  - Anomaly scoring evaluation
-  - Disease severity separation
-  - ROC-AUC and group-wise comparisons
+| Metric | Value |
+|--------|------:|
+| Total MRIs | 2,196 |
+| Age (mean ± std) | 70.62 ± 9.24 |
+| Age range | 42.69 – 95.70 |
 
 ---
 
-### Progression Dataset (Longitudinal Analysis)
-Subjects with multiple timepoints used for disease progression modeling.
+## Sex Distribution
 
-- T1w progression set: 50
-- T2w progression set: 52
-- Used for:
-  - Temporal consistency of latent embeddings
-  - Progression trajectory analysis
-  - Monotonicity of anomaly scores over time
+| Sex | Count | Percentage |
+|-----|------:|-----------:|
+| Female | 1,281 | 58.3% |
+| Male | 915 | 41.7% |
 
 ---
 
-## Data Loading Pipeline
+## Severity Distribution (Aggregated)
 
-All MRI data is loaded using a custom PyTorch Dataset class (`MRIDataset`) that handles:
-- MRI volume loading from `.npy` files
-- Intensity normalization
-- Metadata integration (age, sex)
-- Optional clinical label loading (CDR-SB)
+| Severity Group | Count | Percentage |
+|----------------|------:|-----------:|
+| 0 (Normal) | 1,639 | 74.6% |
+| 1 (Mild) | 340 | 15.5% |
+| 2 (Moderate) | 125 | 5.7% |
+| 3 (Severe) | 10 | 0.5% |
 
-This dataset is used for both training (unsupervised VAE learning) and evaluation (CDR-SB-based analysis).
+---
 
+## Raw CDR-SB Distribution (T1w)
+
+| CDR-SB | Count |
+|--------|------:|
+| 0.0 | 1,639 |
+| 0.5 | 115 |
+| 1.0 | 74 |
+| 1.5 | 59 |
+| 2.0 | 40 |
+| 2.5 | 37 |
+| 3.0 | 34 |
+| 3.5 | 24 |
+| 4.0 | 37 |
+| 4.5 | 33 |
+| 5.0 | 28 |
+| 5.5 | 17 |
+| 6.0 | 19 |
+| 7.0 | 10 |
+| 8.0 | 14 |
+| 8.5 | 1 |
+| 9.0 | 3 |
+| 10.0 | 2 |
+| 11.0 | 2 |
+| 12.0 | 4 |
+| 13.0 | 2 |
+
+---
+
+# 2. T2-weighted MRI Dataset (T2w)
+
+## Overview
+
+| Metric | Value |
+|--------|------:|
+| Total MRIs | 1,362 |
+| Age (mean ± std) | 70.54 ± 9.23 |
+| Age range | 42.69 – 95.70 |
+
+---
+
+## Sex Distribution
+
+| Sex | Count | Percentage |
+|-----|------:|-----------:|
+| Female | 779 | 57.2% |
+| Male | 583 | 42.8% |
+
+---
+
+## Severity Distribution (Aggregated)
+
+| Severity Group | Count | Percentage |
+|----------------|------:|-----------:|
+| 0 (Normal) | 1,013 | 74.4% |
+| 1 (Mild) | 284 | 20.9% |
+| 2 (Moderate) | 103 | 7.6% |
+| 3 (Severe) | 2 | 0.1% |
+
+---
+
+## Raw CDR-SB Distribution (T2w)
+
+| CDR-SB | Count |
+|--------|------:|
+| 0.0 | 1,013 |
+| 0.5 | 72 |
+| 1.0 | 48 |
+| 1.5 | 39 |
+| 2.0 | 24 |
+| 2.5 | 25 |
+| 3.0 | 21 |
+| 3.5 | 15 |
+| 4.0 | 21 |
+| 4.5 | 23 |
+| 5.0 | 19 |
+| 5.5 | 10 |
+| 6.0 | 10 |
+| 7.0 | 6 |
+| 8.0 | 9 |
+| 9.0 | 1 |
+| 10.0 | 1 |
+| 11.0 | 1 |
+| 12.0 | 2 |
+| 13.0 | 1 |
+
+---
+
+# 3. Key Dataset Characteristics
+
+- Both of these datasets may have multiple MRIs per indiviudal, however most have either 1 or 2 making it unfavorable for longitudinal analysis
+- Strong class imbalance toward cognitively normal subjects 
+- Severe dementia cases are rare for both T1w and T2w modalities
+- In the Mild Severity group, the majority of T1w and T2w MRIs have a CDR-SB score of 0.5
+
+---
+
+# 4. Interpretation
+
+The datasets exhibit long-tailed clinical distributions, where:
+- early-stage and healthy subjects dominate
+- advanced dementia stages are sparse and underrepresented
+
+This motivates:
+- stratified sampling
+- severity-aware loss weighting
+- latent-space regularization techniques ??????
+
+---
+
+## Data Splitting and Sampling Strategy
+
+This project uses a carefully structured data splitting pipeline designed to support three goals:
+
+1. Prevent subject-level data leakage  
+2. Preserve clinically meaningful severity distributions  
+3. Enable both cross-sectional and longitudinal analysis  
+
+The dataset is derived from the OASIS-3 cohort and contains multiple MRI scans per subject across time, along with clinical dementia scores (CDR-SB).
+
+---
+
+# 1. High-Level Strategy
+
+Instead of performing a simple random train/test split at the scan level, we split the dataset using **subject-aware and severity-aware grouping**.
+
+This ensures:
+
+- No MRI scans from the same subject appear in both training and test sets (prevents leakage)
+- Severity distributions are preserved across splits
+- Rare disease stages are handled safely during stratification
+- Longitudinal structure is preserved for progression analysis
+
+---
+
+# 2. Input Table Structure
+
+Each row in the dataset corresponds to one MRI session and contains:
+
+- OASIS3_id → subject identifier  
+- fixed_path → preprocessed MRI volume (.npy file)  
+- age_at_session → age at scan time  
+- sex → binary encoding (0/1)  
+- CDRSUM → clinical dementia score (CDR-SB proxy)  
+
+From this table, we construct derived groupings used for splitting.
+
+---
+
+# 3. Severity Group Construction
+
+To enable stratified sampling, we discretize continuous CDR-SB scores into categorical severity groups.
+
+### Mapping function:
+
+- 0 → cognitively normal  
+- 0 < CDR ≤ 4 → mild impairment  
+- 4 < CDR ≤ 9 → moderate impairment  
+- 9 < CDR ≤ 15.5 → severe impairment  
+- CDR > 15.5 → very severe impairment  
+
+### Output:
+Each sample receives:
+
+- severity_group ∈ {0, 1, 2, 3, 4}
+
+This is used for stratified sampling.
+
+---
+
+# 4. Subject-Level Grouping
+
+Because each subject can have multiple MRI sessions, we enforce subject-level consistency.
+
+We group all rows by:
+
+- OASIS3_id
+
+This allows us to:
+- isolate progression trajectories
+- avoid leakage across timepoints
+- construct specialized evaluation subsets
+
+---
+
+# 5. Table Decomposition Strategy
+
+We split the full dataset into three mutually exclusive subsets:
+
+---
+
+## 5.1 Progression Table (Longitudinal Subset)
+
+This subset contains subjects who exhibit **both healthy and diseased states over time**.
+
+### Construction steps:
+
+For each subject:
+- check if they have at least one scan with CDR = 0
+- AND at least one scan with CDR > 0
+
+If both conditions are satisfied:
+- include:
+  - one baseline scan (CDR = 0)
+  - one maximum severity scan (highest CDR for that subject)
+
+### Purpose:
+This dataset is used for:
+- disease progression analysis
+- temporal consistency evaluation
+- latent trajectory studies
+
+---
+
+## 5.2 Max-CDR Dataset (Severity Representative Set)
+
+This subset contains **one scan per subject representing maximum disease severity**.
+
+### Construction steps:
+
+For each subject:
+- identify scan with maximum CDR-SB score
+- select that single scan
+
+### Purpose:
+This dataset is used for:
+- severity-based evaluation
+- anomaly detection benchmarks
+- cross-sectional disease separation
+
+---
+
+## 5.3 Remaining Pool (General Dataset)
+
+All scans not included in the two subsets above are placed into a residual dataset.
+
+This pool is later used for:
+- training/test splitting
+- additional evaluation samples
+- balancing severity distribution
+
+---
+
+# 6. Stratified Train/Test Split
+
+The remaining dataset (after Table 1 and Table 2 extraction) is split into training and test sets.
+
+---
+
+## 6.1 Severity-aware stratification
+
+We perform stratified splitting based on:
+
+- severity_group
+
+This ensures that:
+- all severity levels are represented in both training and test sets
+- distribution shift is minimized
+
+---
+
+## 6.2 Handling rare classes
+
+Some severity groups may have very few samples.
+
+If a severity group has:
+
+- fewer than 5 samples
+
+then:
+
+- all samples from that group are assigned to the training set
+- they are excluded from test stratification
+
+This prevents:
+- unstable stratified sampling
+- missing-class issues in test evaluation
+
+---
+
+## 6.3 Final split procedure
+
+1. Separate rare and common severity groups  
+2. Apply stratified train/test split only to common groups  
+3. Add rare-group samples back into training set  
+4. Concatenate final training dataset  
+5. Keep test dataset strictly stratified and leakage-free  
+
+---
+
+# 7. Final Dataset Composition
+
+After all splitting steps, we obtain:
+
+---
+
+## Training Set
+
+Includes:
+- majority of MRI scans
+- all rare severity cases
+- subject-disjoint from test set
+- used for:
+  - VAE training
+  - representation learning
+  - CDR head training
+
+---
+
+## Test Set
+
+Includes:
+- stratified severity distribution
+- unseen subjects
+- used for:
+  - reconstruction evaluation
+  - severity prediction evaluation
+  - anomaly scoring
+
+---
+
+## Progression Set
+
+Includes:
+- paired baseline + disease scans
+- subjects with longitudinal progression
+- used for:
+  - trajectory analysis in latent space
+  - monotonicity of predicted severity
+
+---
+
+## Max-CDR Set
+
+Includes:
+- one scan per subject at highest disease severity
+- used for:
+  - severity separation benchmarking
+  - cross-sectional evaluation
+
+---
+
+# 8. Data Loading Pipeline
+
+Each dataset is wrapped in a PyTorch Dataset (`MRIDataset`), which:
+
+For each sample:
+1. Loads `.npy` MRI volume
+2. Applies per-scan min-max normalization
+3. Loads demographic variables (age, sex)
+4. Optionally loads CDR-SB label
+5. Optionally loads severity group
+
+---
+
+## Output formats
+
+### Training mode:
+Returns:
+- MRI volume
+- age
+- sex
+- CDR (optional supervision)
+- severity group (for stratification tracking)
+
+### Evaluation mode:
+Returns same structure, used for:
+- reconstruction evaluation
+- severity prediction
+- latent analysis
+
+---
+
+# 9. Key Design Rationale
+
+This splitting strategy is designed to ensure:
+
+### 1. No subject leakage
+All scans from a single subject remain in a single split.
+
+### 2. Stable severity representation
+All severity levels are preserved across training and testing.
+
+### 3. Robust rare-class handling
+Rare disease stages are never excluded from training.
+
+### 4. Longitudinal compatibility
+Progression analysis is explicitly separated from cross-sectional evaluation.
+
+---
+
+# 10. Summary
+
+Overall, the dataset pipeline produces three complementary datasets:
+
+- Training set → representation learning  
+- Test set → evaluation and generalization  
+- Progression set → longitudinal disease modeling  
+- Max-CDR set → severity benchmarking  
+
+This structure allows the model to learn both:
+- cross-sectional disease structure  
+- longitudinal progression dynamics  
 ---
 
 ### Input Data Structure
@@ -210,7 +608,8 @@ Each sample consists of:
 - MRI volume: `.npy` file containing a 3D brain scan
 - Age: scalar float
 - Sex: binary encoding (0 = male, 1 = female)
-- CDR-SB (optional): clinical severity score
+- CDR-SB: clinical severity score
+- Group: severity score based on
 
 ---
 
@@ -251,218 +650,411 @@ All outputs are converted to `torch.float32` tensors for compatibility with the 
 
 ## Model Architecture
 
-This work implements a 3D Variational Autoencoder (VAE) for structural MRI reconstruction with demographic conditioning and stochastic skip connections. The architecture is fully convolutional and consists of four tightly coupled components: a demographic embedding network, a 3D CNN encoder, a probabilistic latent space, and a 3D CNN decoder with Bayesian skip connections. 
+This project implements a 3D Variational Autoencoder (VAE) extended with:
+- demographic conditioning (age, sex)
+- stochastic (Bayesian) skip connections
+- a supervised disease severity prediction head (CDR-SB regression)
+
+The model is designed to both:
+1. reconstruct 3D brain MRI scans
+2. learn a structured latent space that reflects dementia severity
 
 ---
 
-### 1. Demographic Embedding
+# 1. High-Level Overview
 
-Demographic variables are used to condition the generative process.
+The model has four main components:
 
-Inputs:
-- age ∈ [B] 
+1. **Demographic Embedding Network**
+   → converts age + sex into a learned conditioning vector
+
+2. **Encoder (3D CNN)**
+   → compresses MRI into a latent representation
+
+3. **Latent Space (VAE sampling)**
+   → converts encoder output into a stochastic latent vector
+
+4. **Decoder (3D CNN + Bayesian Skip Connections)**
+   → reconstructs MRI using latent vector + stochastic skip features
+
+5. **CDR Prediction Head**
+   → predicts disease severity from latent space
+
+---
+
+# 2. Input Format
+
+Each input sample contains:
+
+- MRI volume:  
+  `x ∈ [1, 160, 192, 160]`
+
+- age: scalar (float)
+
+- sex: scalar (0 or 1)
+
+---
+
+# 3. Demographic Embedding
+
+Demographics are converted into a learned feature vector.
+
+### Input:
+- age ∈ [B]
 - sex ∈ [B]
 
-These are combined into:
-- demo ∈ [B, 2] via stacking `[age, sex]`
+### Step 1: Stack inputs
+We combine them into a single vector:
 
-The stacked vector is passed through an MLP:
+- demo_input ∈ [B, 2]  
+  = [age, sex]
+
+### Step 2: MLP projection
+
+This vector is passed through:
 
 - Linear(2 → 32)
 - ReLU
-- Linear(32 → embed_dim)
+- Linear(32 → 32)
 - ReLU
 
-Output:
-- demographic embedding ∈ [B, embed_dim] (default embed_dim = 32)
+### Output:
+- demo_embedding ∈ [B, 32]
 
-This embedding is later injected into all stochastic skip connections in the decoder.
+### Purpose:
+This vector is used to condition the decoder so that reconstruction depends on patient-specific factors like age and sex.
 
 ---
 
-### 2. Encoder (3D Convolutional VAE Encoder)
+# 4. Encoder (3D Convolutional Network)
 
-The encoder maps MRI volumes into a latent Gaussian representation.
+The encoder compresses the MRI volume into a compact representation.
 
-Input:
-- x ∈ [B, 1, D, H, W]
+---
 
-The convolutional backbone performs progressive downsampling:
+## 4.1 Convolutional Downsampling Path
 
-- Conv3D(1 → 32, stride=2) → BatchNorm3D → ReLU
-- Conv3D(32 → 64, stride=2) → BatchNorm3D → ReLU
-- Conv3D(64 → 128, stride=2) → BatchNorm3D → ReLU
-- Conv3D(128 → 256, stride=2) → BatchNorm3D → ReLU
+We apply 4 layers of 3D convolutions:
 
-Skip features are stored:
-- s1, s2, s3
+### Layer 1
+- Conv3D: 1 → 32
+- Stride: 2
+- Output: [B, 32, 80, 96, 80]
 
-Final feature map:
+### Layer 2
+- Conv3D: 32 → 64
+- Stride: 2
+- Output: [B, 64, 40, 48, 40]
+
+### Layer 3
+- Conv3D: 64 → 128
+- Stride: 2
+- Output: [B, 128, 20, 24, 20]
+
+### Layer 4
+- Conv3D: 128 → 256
+- Stride: 2
+- Output: [B, 256, 10, 12, 10]
+
+Each layer uses:
+- BatchNorm3D
+- ReLU activation
+
+---
+
+## 4.2 Skip Features
+
+We store intermediate feature maps:
+
+- s1 → output of layer 1
+- s2 → output of layer 2
+- s3 → output of layer 3
+
+These are later reused in the decoder.
+
+---
+
+## 4.3 Flattening
+
+Final encoder output:
+
 - s4 ∈ [B, 256, 10, 12, 10]
 
-This is flattened into:
-- 256 × 10 × 12 × 10
+We flatten it:
 
-Two linear layers produce the latent distribution:
+- flatten → [B, 256 × 10 × 12 × 10]
+
+This becomes the input to the latent projection layer.
+
+---
+
+## 4.4 Latent Projection
+
+We compute:
+
+- μ (mean)
+- logvar (log variance)
+
+via linear layers:
+
+- Linear(flatten → latent_dim)
+- Linear(flatten → latent_dim)
+
+Output:
 - μ ∈ [B, latent_dim]
 - logvar ∈ [B, latent_dim]
 
-Stability constraint:
-- logvar is clamped to [-4, 4]
+We clamp logvar to stabilize training:
+- logvar ∈ [-10, -2]
 
 ---
 
-### 3. Latent Space (Reparameterization)
+# 5. Latent Space (Reparameterization Trick)
 
-Latent sampling follows the VAE reparameterization trick:
+We sample the latent vector using:
 
-σ = exp(0.5 × logvar)  
-ε ~ N(0, I)  
-z = μ + ε ⊙ σ  
+### Step 1: Convert logvar → std
+σ = exp(0.5 × logvar)
 
-Post-processing:
-- NaNs are replaced with 0
-- L2 normalization is applied:
+### Step 2: Sample noise
+ε ~ N(0, I)
 
-z = z / (||z|| + 1e-8)
-
-This stabilizes latent magnitude during training.
+### Step 3: Reparameterize
+z = μ + ε × σ
 
 ---
 
-### 4. Bayesian Skip Connections
+## Stability step:
+- any NaNs → replaced with 0
 
-Skip connections inject uncertainty into decoder feature propagation.
+---
+
+## Output:
+- z ∈ [B, latent_dim]
+
+This vector represents a compressed “summary” of the brain scan.
+
+---
+
+# 6. Bayesian Skip Connections
+
+This is a key part of the model.
+
+Instead of directly passing encoder features to the decoder, we treat them as **uncertain distributions**.
+
+---
+
+## 6.1 Input
 
 Each skip connection takes:
+
 - feature map x ∈ [B, C, D, H, W]
-- demographic embedding demo ∈ [B, demo_dim]
+- demographic embedding demo ∈ [B, 32]
 
-Processing steps:
+---
 
-1. Expand demographic embedding:
-- demo → [B, demo_dim, D, H, W]
+## 6.2 Expand demographics
 
-2. Concatenate:
-- [x, demo] along channel dimension
+We reshape demographics into 3D form:
 
-3. Predict distribution:
-- μ = Conv3D(C + demo_dim → C)
-- logvar = Conv3D(C + demo_dim → C)
-- logvar clamped to [-4, 4]
+- [B, 32] → [B, 32, D, H, W]
 
-4. Sample stochastic output:
+Then concatenate:
+
+- x_cat ∈ [B, C + 32, D, H, W]
+
+---
+
+## 6.3 Predict distribution
+
+We compute:
+
+- μ_skip = Conv3D(x_cat)
+- logvar_skip = Conv3D(x_cat)
+
+Then clamp:
+- logvar ∈ [-10, -2]
+
+---
+
+## 6.4 Sampling
+
+We sample:
+
 σ = exp(0.5 × logvar)  
 ε ~ N(0, I)  
 out = μ + ε × σ  
 
-5. Numerical stability:
-- NaNs replaced with 0
+---
+
+## 6.5 Output
+
+Each skip produces:
+
+- stochastic feature map ∈ [B, C, D, H, W]
 
 ---
 
-### 5. Decoder (3D Convolutional Decoder)
+## Intuition:
+Instead of saying:
+> “this feature is fixed”
 
-The decoder reconstructs MRI volumes from latent and skip information.
-
-#### 5.1 Latent expansion
-z ∈ [B, latent_dim] is projected via:
-
-Linear(latent_dim → 256 × 10 × 12 × 10)  
-→ reshape to [B, 256, 10, 12, 10]
+we say:
+> “this feature has uncertainty, and it depends on demographics”
 
 ---
 
-#### 5.2 Upsampling pipeline (mirrors encoder)
+# 7. Decoder (3D Reconstruction Network)
 
-- ConvTranspose3D(256 → 128) → BN → ReLU + BayesianSkip(s3, demo)
-- ConvTranspose3D(128 → 64) → BN → ReLU + BayesianSkip(s2, demo)
-- ConvTranspose3D(64 → 32) → BN → ReLU + BayesianSkip(s1, demo)
-- ConvTranspose3D(32 → 1) → Sigmoid
+The decoder reconstructs the MRI from:
 
-Output:
-- reconstructed MRI ∈ [B, 1, D, H, W] in range [0, 1]
+- latent vector z
+- skip connections
+- demographic embedding
 
 ---
 
-### 6. Full Forward Pass
+## 7.1 Latent expansion
 
-1. Encode MRI:
+We project z:
+
+Linear(latent_dim → 256 × 10 × 12 × 10)
+
+Then reshape:
+
+- z → [B, 256, 10, 12, 10]
+
+---
+
+## 7.2 Upsampling path
+
+We reverse the encoder using ConvTranspose3D layers:
+
+---
+
+### Stage 1
+- ConvTranspose3D: 256 → 128
+- Output: [B, 128, 20, 24, 20]
+- Add: BayesianSkip(s3, demo)
+
+---
+
+### Stage 2
+- ConvTranspose3D: 128 → 64
+- Output: [B, 64, 40, 48, 40]
+- Add: BayesianSkip(s2, demo)
+
+---
+
+### Stage 3
+- ConvTranspose3D: 64 → 32
+- Output: [B, 32, 80, 96, 80]
+- Add: BayesianSkip(s1, demo)
+
+---
+
+### Stage 4 (final reconstruction)
+- ConvTranspose3D: 32 → 1
+- Activation: tanh
+
+---
+
+## Output:
+- reconstructed MRI ∈ [B, 1, 160, 192, 160]
+
+---
+
+# 8. CDR Severity Prediction Head
+
+This is a separate branch used for clinical prediction.
+
+---
+
+## 8.1 Inputs
+
+We concatenate:
+
+- latent vector z ∈ [B, latent_dim]
+- pooled bottleneck features ∈ [B, 256]
+
+Final input:
+- [B, latent_dim + 256]
+
+---
+
+## 8.2 Network
+
+- Linear → 128
+- ReLU
+- Linear → 64
+- ReLU
+- Linear → 1
+
+---
+
+## Output:
+- predicted CDR-SB score ∈ [B, 1]
+
+---
+
+## Purpose:
+This forces the latent space to encode clinically meaningful disease severity information.
+
+---
+
+# 9. Bottleneck Feature Pooling
+
+We also extract global structure from encoder output:
+
+- AdaptiveAvgPool3D → [B, 256, 1, 1, 1]
+- Flatten → [B, 256]
+
+This is used for:
+- CDR prediction
+- contrastive regularization
+
+---
+
+# 10. Full Forward Pass
+
+For each MRI:
+
+### Step 1: Encode
 - μ, logvar, s1/s2/s3, bottleneck = Encoder(x)
 
-2. Sample latent:
-- z = μ + ε ⊙ σ (with normalization)
+### Step 2: Sample latent
+- z = μ + εσ
 
-3. Compute demographics:
+### Step 3: Demographics
 - demo = MLP(age, sex)
 
-4. Decode:
-- recon = Decoder(z, skips, demo)
+### Step 4: Decode
+- x̂ = Decoder(z, skips, demo)
 
-Outputs:
-- recon
-- μ
-- logvar
-- z
-- skips
-- bottleneck
+### Step 5: Severity prediction
+- cdr_pred = CDRHead(z, pooled_bottleneck)
 
 ---
 
-### 7. Loss Functions
+## Final outputs:
 
-#### 7.1 Reconstruction Loss
-Voxel-wise L1 loss:
-
-L_recon = ||x − recon||₁
-
----
-
-#### 7.2 KL Divergence
-Regularization toward standard normal prior:
-
-L_KL = -0.5 × mean(1 + logvar − μ² − exp(logvar))
+- reconstructed MRI
+- predicted CDR score
+- latent mean μ
+- latent variance logvar
+- sampled latent z
+- bottleneck features
 
 ---
 
-#### 7.3 Patch Contrastive Loss
+# 11. Key Intuition (Plain Language)
 
-Encourages structured similarity in feature maps.
-
-Steps:
-- AdaptiveAvgPool3D → [B, C, 5, 6, 5]
-- Flatten into patch descriptors
-- L2 normalization
-- Compute similarity matrix: sim = featᵀ × feat
-- Remove identity bias
-- Penalize deviation: L_patch = mean((sim − I)²)
-
----
-
-### 8. Total Objective
-
-Final training loss:
-
-L = L_recon + β × L_KL + λ × L_patch
-
-Where:
-- β controls KL regularization strength
-- λ controls patch-level contrastive regularization strength
-
----
-
-## VAE Training Procedure
-
-The Variational Autoencoder (VAE) is trained using a multi-objective optimization framework that combines reconstruction learning, probabilistic regularization, and representation consistency constraints. The training process is implemented in the `train_vae` function, which also returns a per-epoch loss history for downstream analysis and convergence tracking.
-
----
-
-### Objective
-
-The model is optimized to learn a structured latent representation of 3D MRI brain volumes while incorporating:
-- Reconstruction fidelity
-- Latent space regularization via KL divergence
-- Stochastic representation consistency via contrastive patch-level constraints
+- The encoder “compresses” the brain scan into numbers  
+- The latent space stores a noisy compressed brain representation  
+- The decoder “rebuilds” the brain from those numbers  
+- Skip connections preserve fine anatomical detail  
+- Demographics guide reconstruction toward expected anatomy  
+- CDR head forces the model to understand disease severity  
 
 ---
 
@@ -548,5 +1140,4 @@ Each epoch loss is computed as: avg_loss = total_loss / number_of_batches
 
 * OASIS-3 dataset!!!!
 * SynthStrip (FreeSurfer)!!!!
-
----
+Wyman-Chick, K. A., & Scott, B. J. (2015). DEVELOPMENT OF CLINICAL DEMENTIA RATING SCALE CUTOFF SCORES FOR PATIENTS WITH PARKINSON'S DISEASE. Movement disorders clinical practice, 2(3), 243–248. https://doi.org/10.1002/mdc3.12163---
