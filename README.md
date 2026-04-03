@@ -148,16 +148,91 @@ The channel dimension is added to support PyTorch 3D convolutional models.
 
 ---
 
-### Quality Control
+### Quality Control and Outlier Removal
 
 - Failed preprocessing steps (e.g., skull stripping errors) were logged and excluded  
-- Visual inspection was performed on sample scans to verify anatomical integrity  
-- Central slices (sagittal, coronal, axial) were used for manual sanity checks
-  ADD EDGE STUFF
+- Filtering pipeline that identified and removed corrupted, misaligned, or anomalous MRI volumes prior to model training
+
+---
+# 1. Overview of filtering
+
+Each MRI file was evaluated using multiple independent criteria:
+
+1. File integrity 
+2. Global intensity statistics 
+3. Spatial alignment 
+4. Boundary artifacts 
+
+A scan was removed if it failed any of the above criteria.
+
 ---
 
-ADD HOW I GO THROGH TO GET RUD OF BAD ONES
-___
+# 2. File Integrity Check
+
+Each `.npy` file was loaded and inspected for:
+
+- loading errors (corrupt or unreadable files)  
+- presence of NaN values  
+- presence of infinite values  
+
+---
+
+# 3. Statistical Outlier Detection
+
+
+- abnormally bright or dark scans  
+- scans with extremely low or high contrast  
+- preprocessing failures affecting intensity scaling
+To identify files that were blurry, had poor contrast, or had abnormally bright or dark scans, we computed basic intensity statistics for each scan:
+
+- mean intensity  
+- standard deviation  
+
+These were then normalized across the dataset using a Z-score:
+
+z = (x - mean) / std
+
+A scan is flagged as an outlier if:
+
+- |z_mean| > threshold  
+- OR |z_std| > threshold  
+
+After testing different thresholds, we found a threshold of 2 that balanced accuracy, flagging erroneous files while ignoring MRIs with large anatomical deviations. 
+
+---
+
+# 4. Center-of-Mass Shift (Spatial Misalignment)
+
+We estimate the distance of the 'mass' in the brain image from the center to avoid training or testing on images that were misaligned, had cropping issues, or failed preprocessing.
+
+---
+
+## Procedure
+
+1. Convert the 3D volume into a 2D projection (mean across slices)  
+2. Normalize intensities
+3. Compute the center of mass of the image  
+4. Measure its distance from the image center to find its shift value
+5. Scans with a shift value above the 95th percentile were removed
+
+---
+
+# 5. Edge Artifact Detection
+
+We measured the fraction of the image boundary that consists of zero-valued pixels in order to identify images with excessive padding, cropping errors, or failed skull stripping.
+
+---
+
+## Procedure
+
+1. Extract the middle slice of the MRI  
+2. Collect pixel values along the image border  
+3. Compute the fraction of border pixels equal to zero
+4. Removed scans with an edge ratio > threshold
+
+Through visual testing, we found a threshold value of 0.2 was able to identify which files had the mri partially cut off by the edge. 
+
+---
 
 ## Dataset Summary Statistics
 
@@ -286,7 +361,7 @@ This section summarizes the cleaned OASIS-3 T1w and T2w datasets used in this wo
 
 # 3. Key Dataset Characteristics
 
-- Both of these datasets may have multiple MRIs per indiviudal, however most have either 1 or 2 making it unfavorable for longitudinal analysis
+- Both of these datasets may have multiple MRIs per individual; however, most have either 1 or 2, making it unfavorable for longitudinal analysis
 - Strong class imbalance toward cognitively normal subjects 
 - Severe dementia cases are rare for both T1w and T2w modalities
 - In the Mild Severity group, the majority of T1w and T2w MRIs have a CDR-SB score of 0.5
@@ -308,14 +383,8 @@ This motivates:
 
 ## Data Splitting and Sampling Strategy
 
-This project uses a carefully structured data splitting pipeline designed to support three goals:
-
-1. Prevent subject-level data leakage  
-2. Preserve clinically meaningful severity distributions  
-3. Enable both cross-sectional and longitudinal analysis  
-
-The dataset is derived from the OASIS-3 cohort and contains multiple MRI scans per subject across time, along with clinical dementia scores (CDR-SB).
-
+To prevent bi
+??????????????????/
 ---
 
 # 1. High-Level Strategy
