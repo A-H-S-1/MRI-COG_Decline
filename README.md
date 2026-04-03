@@ -206,104 +206,104 @@ This section summarizes the cleaned OASIS-3 T1w and T2w datasets used in this wo
 
 #### Overview
 
-Column 1	Column 2
-Metric	Value
-Total MRIs	2,196
-Age (mean ± std)	70.62 ± 9.24
-Age range	42.69 – 95.70
+| Metric            | Value           |
+|------------------|-----------------|
+| Total MRIs       | 2,196           |
+| Age (mean ± std) | 70.62 ± 9.24    |
+| Age range        | 42.69 – 95.70   |
 
 #### Sex Distribution
 
-Column 1	Column 2	Column 3
-Sex	Count	Percentage
-Female	1,281	58.3%
-Male	915	41.7%
+| Sex    | Count | Percentage |
+|--------|-------|------------|
+| Female | 1,281 | 58.3%      |
+| Male   | 915   | 41.7%      |
 
 #### Severity Distribution (Aggregated)
 
-Column 1	Column 2	Column 3
-Severity Group	Count	Percentage
-0 (Normal)	1,639	74.6%
-1 (Mild)	340	15.5%
-2 (Moderate)	125	5.7%
-3 (Severe)	10	0.5%
+| Severity Group | Count | Percentage |
+|----------------|-------|------------|
+| 0 (Normal)     | 1,639 | 74.6%      |
+| 1 (Mild)       | 340   | 15.5%      |
+| 2 (Moderate)   | 125   | 5.7%       |
+| 3 (Severe)     | 10    | 0.5%       |
 
 #### Raw CDR-SB Distribution (T1w)
 
-Column 1	Column 2
-CDR-SB	Count
-0.0	1,639
-0.5	115
-1.0	74
-1.5	59
-2.0	40
-2.5	37
-3.0	34
-3.5	24
-4.0	37
-4.5	33
-5.0	28
-5.5	17
-6.0	19
-7.0	10
-8.0	14
-8.5	1
-9.0	3
-10.0	2
-11.0	2
-12.0	4
-13.0	2
+| CDR-SB | Count |
+|--------|-------|
+| 0.0    | 1,639 |
+| 0.5    | 115   |
+| 1.0    | 74    |
+| 1.5    | 59    |
+| 2.0    | 40    |
+| 2.5    | 37    |
+| 3.0    | 34    |
+| 3.5    | 24    |
+| 4.0    | 37    |
+| 4.5    | 33    |
+| 5.0    | 28    |
+| 5.5    | 17    |
+| 6.0    | 19    |
+| 7.0    | 10    |
+| 8.0    | 14    |
+| 8.5    | 1     |
+| 9.0    | 3     |
+| 10.0   | 2     |
+| 11.0   | 2     |
+| 12.0   | 4     |
+| 13.0   | 2     |
 
 ### T2-weighted MRI Dataset (T2w)
 
 #### Overview
 
-Column 1	Column 2
-Metric	Value
-Total MRIs	1,362
-Age (mean ± std)	70.54 ± 9.23
-Age range	42.69 – 95.70
+| Metric            | Value           |
+|------------------|-----------------|
+| Total MRIs       | 1,362           |
+| Age (mean ± std) | 70.54 ± 9.23    |
+| Age range        | 42.69 – 95.70   |
 
 #### Sex Distribution
 
-Column 1	Column 2	Column 3
-Sex	Count	Percentage
-Female	779	57.2%
-Male	583	42.8%
+| Sex    | Count | Percentage |
+|--------|-------|------------|
+| Female | 779   | 57.2%      |
+| Male   | 583   | 42.8%      |
 
 #### Severity Distribution (Aggregated)
 
-Column 1	Column 2	Column 3
-Severity Group	Count	Percentage
-0 (Normal)	1,013	74.4%
-1 (Mild)	284	20.9%
-2 (Moderate)	103	7.6%
-3 (Severe)	2	0.1%
+| Severity Group | Count | Percentage |
+|----------------|-------|------------|
+| 0 (Normal)     | 1,013 | 74.4%      |
+| 1 (Mild)       | 284   | 20.9%      |
+| 2 (Moderate)   | 103   | 7.6%       |
+| 3 (Severe)     | 2     | 0.1%       |
 
 #### Raw CDR-SB Distribution (T2w)
 
-Column 1	Column 2
-CDR-SB	Count
-0.0	1,013
-0.5	72
-1.0	48
-1.5	39
-2.0	24
-2.5	25
-3.0	21
-3.5	15
-4.0	21
-4.5	23
-5.0	19
-5.5	10
-6.0	10
-7.0	6
-8.0	9
-9.0	1
-10.0	1
-11.0	1
-12.0	2
-13.0	1
+| CDR-SB | Count |
+|--------|-------|
+| 0.0    | 1,013 |
+| 0.5    | 72    |
+| 1.0    | 48    |
+| 1.5    | 39    |
+| 2.0    | 24    |
+| 2.5    | 25    |
+| 3.0    | 21    |
+| 3.5    | 15    |
+| 4.0    | 21    |
+| 4.5    | 23    |
+| 5.0    | 19    |
+| 5.5    | 10    |
+| 6.0    | 10    |
+| 7.0    | 6     |
+| 8.0    | 9     |
+| 9.0    | 1     |
+| 10.0   | 1     |
+| 11.0   | 1     |
+| 12.0   | 2     |
+| 13.0   | 1     |
 
 ### Key Dataset Characteristics
 
@@ -492,12 +492,12 @@ The encoder compresses the MRI volume into a compact representation.
 
 Four 3D convolutional layers progressively reduce spatial resolution:
 
-Column 1	Column 2	Column 3
-Layer	Channels	Output Shape
-Conv1	1 → 32	[B, 32, 80, 96, 80]
-Conv2	32 → 64	[B, 64, 40, 48, 40]
-Conv3	64 → 128	[B, 128, 20, 24, 20]
-Conv4	128 → 256	[B, 256, 10, 12, 10]
+| Layer | Channels   | Output Shape            |
+|-------|------------|-------------------------|
+| Conv1 | 1 → 32     | [B, 32, 80, 96, 80]     |
+| Conv2 | 32 → 64    | [B, 64, 40, 48, 40]     |
+| Conv3 | 64 → 128   | [B, 128, 20, 24, 20]    |
+| Conv4 | 128 → 256  | [B, 256, 10, 12, 10]    |
 
 #### Each layer uses:
 
@@ -616,12 +616,12 @@ The decoder reconstructs MRI volumes using latent features, demographic conditio
 
 #### Upsampling Pipeline
 
-Column 1	Column 2	Column 3
-Stage	Operation	Output Shape
-1	Deconv 256 → 128 + BayesianSkip(s3)	[B, 128, 20, 24, 20]
-2	Deconv 128 → 64 + BayesianSkip(s2)	[B, 64, 40, 48, 40]
-3	Deconv 64 → 32 + BayesianSkip(s1)	[B, 32, 80, 96, 80]
-4	Deconv 32 → 1	[B, 1, 160, 192, 160]
+| Stage | Operation                                 | Output Shape            |
+|-------|-------------------------------------------|-------------------------|
+| 1     | Deconv 256 → 128 + BayesianSkip(s3)       | [B, 128, 20, 24, 20]    |
+| 2     | Deconv 128 → 64 + BayesianSkip(s2)        | [B, 64, 40, 48, 40]     |
+| 3     | Deconv 64 → 32 + BayesianSkip(s1)         | [B, 32, 80, 96, 80]     |
+| 4     | Deconv 32 → 1                            | [B, 1, 160, 192, 160]   |
 
 #### Each intermediate stage uses:
 
